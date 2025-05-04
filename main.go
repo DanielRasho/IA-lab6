@@ -119,5 +119,5 @@ func main() {
 		DisplayBoard(game)
 		game.Tick()
 	}
-	fmt.Println(game.Report())
+	DisplayReport(game.Report())
 }

@@ -34,3 +34,15 @@ func DisplayBoard(g simulation.Game) {
 		)
 	}
 }
+
+func DisplayReport(st simulation.GameStats) {
+	fmt.Printf(
+		`
+==========
+GAME STATS
+==========
+Winner     : %s
+# Movements: %d
+Duration   : %s
+`, st.Winner, st.MovementCount, st.EndTime.Sub(st.StartTime))
+}
