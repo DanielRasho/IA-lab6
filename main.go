@@ -91,8 +91,14 @@ func main() {
 	fmt.Println("Starting game...")
 	game.Start()
 	for !game.ShouldEnd() {
-		DisplayBoard(game)
+		if params.ShowBoard {
+			DisplayBoard(game)
+		}
 		game.Tick()
+	}
+
+	if params.ShowBoard {
+		DisplayBoard(game)
 	}
 	DisplayReport(game.Report())
 }
