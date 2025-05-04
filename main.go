@@ -1,9 +1,9 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/DanielRasho/IA-lab6/players"
 	"github.com/DanielRasho/IA-lab6/simulation"
@@ -33,42 +33,18 @@ func PrettyDisplay(p PlayerType) string {
 	}
 }
 
-type PlayerValue struct {
-	val PlayerType
-}
-
-func (s PlayerValue) Set(obj string) error {
-	switch obj {
+func FromString(s string) PlayerType {
+	switch strings.TrimSpace(s) {
 	case "h":
-		s.val = HUMAN
-	case "m":
-		s.val = MINIMAX
+		return HUMAN
+	case "mi":
+		return MINIMAX
 	case "a":
-		s.val = ALFA_BETA
+		return ALFA_BETA
 	case "mo":
-		s.val = MONTECARLO
+		return MONTECARLO
 	default:
-		return errors.New("Invalid player type provided!")
-	}
-	return nil
-}
-
-func (s PlayerValue) Get() interface{} {
-	return s.val
-}
-
-func (s PlayerValue) String() string {
-	switch s.val {
-	case HUMAN:
-		return "h"
-	case MONTECARLO:
-		return "mo"
-	case MINIMAX:
-		return "m"
-	case ALFA_BETA:
-		return "a"
-	default:
-		return ""
+		panic("Invalid player type supplied!")
 	}
 }
 
@@ -82,16 +58,15 @@ func ParseProgramParams() ProgramParams {
 	params := ProgramParams{}
 	flag.BoolVar(&params.ShowBoard, "showBoard", true, "Describes whether or not the board should be displayed when making a game")
 
-	pTypeFormat := "The type of player %d. Valid values are:\n* h: Human\n* m: Normal minimax\n* a: Minimax with alfa/beta prunning\n* mo: Montecarlo AI"
-	var p1 PlayerValue
-	flag.Var(&p1, "p1", fmt.Sprintf(pTypeFormat, 1))
-	params.Player1 = p1.Get().(PlayerType)
+	pTypeFormat := "The type of player %d. Valid values are:\n* h: Human\n* mi: Normal minimax\n* a: Minimax with alfa/beta prunning\n* mo: Montecarlo AI"
 
-	var p2 PlayerValue
-	flag.Var(&p2, "p2", fmt.Sprintf(pTypeFormat, 2))
-	params.Player2 = p2.Get().(PlayerType)
+	var p1, p2 string
+	flag.StringVar(&p1, "p1", "h", fmt.Sprintf(pTypeFormat, 1))
+	flag.StringVar(&p2, "p2", "h", fmt.Sprintf(pTypeFormat, 2))
 
 	flag.Parse()
+	params.Player1 = FromString(p1)
+	params.Player2 = FromString(p2)
 	return params
 }
 
