@@ -116,6 +116,7 @@ func main() {
 	fmt.Println("Starting game...")
 	game.Start()
 	for !game.ShouldEnd() {
+		DisplayBoard(game)
 		game.Tick()
 	}
 	fmt.Println(game.Report())

@@ -1,8 +1,36 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/DanielRasho/IA-lab6/simulation"
+)
 
 func ClearScreen() {
 	fmt.Print("\033[H\033[2J")
+}
 
+func CellToString(c simulation.CellMark, idx int64) string {
+	switch c {
+	case simulation.EMPTY:
+		return strconv.FormatInt(idx, 10)
+	case simulation.O:
+		return "O"
+	case simulation.X:
+		return "X"
+	default:
+		panic("Can't convert invalid cellmark to string!")
+	}
+}
+
+func DisplayBoard(g simulation.Game) {
+	for i := range 3 {
+		fmt.Printf(
+			"| %s | %s | %s |\n",
+			CellToString(g.Board[i*3], int64(i*3+1)),
+			CellToString(g.Board[i*3+1], int64(i*3+2)),
+			CellToString(g.Board[i*3+2], int64(i*3+3)),
+		)
+	}
 }
