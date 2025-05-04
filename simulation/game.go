@@ -6,7 +6,7 @@ import (
 
 type TicTacToePlayer interface {
 	// Marks a specific cell on the specified board!
-	// Remember, all cells have an index from 0-8!
+	// YOU MUST RETURN A NUMBER BETWEEN 0-8, this tells the system which cell you're trying to mark!
 	// If the cell can't be marked because it already is, the whole world explodes!
 	MakeMove(board TicTacToeBoard) int
 }
