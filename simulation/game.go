@@ -8,7 +8,7 @@ type TicTacToePlayer interface {
 	// Marks a specific cell on the specified board!
 	// YOU MUST RETURN A NUMBER BETWEEN 0-8, this tells the system which cell you're trying to mark!
 	// If the cell can't be marked because it already is, the whole world explodes!
-	MakeMove(board TicTacToeBoard) int
+	MakeMove(board TicTacToeBoard, whoami Turn) int
 }
 
 type GameStats struct {
@@ -66,7 +66,7 @@ func (g *Game) Tick() {
 		currentPlayer = g.Player2
 	}
 
-	markIdx := currentPlayer.MakeMove(g.Board)
+	markIdx := currentPlayer.MakeMove(g.Board, g.CurrentTurn)
 	if g.Board[markIdx] != EMPTY {
 		panic("You're trying to mark an already marked cell!")
 	}

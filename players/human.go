@@ -11,7 +11,7 @@ import (
 
 type HumanPlayer struct{ reader bufio.Reader }
 
-func (self HumanPlayer) MakeMove(board sim.TicTacToeBoard) int {
+func (self HumanPlayer) MakeMove(board sim.TicTacToeBoard, _ sim.Turn) int {
 	line, err := self.reader.ReadString('\n')
 	if err != nil {
 		panic("Failed to get user input!")
