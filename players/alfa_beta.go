@@ -17,6 +17,16 @@ type AlfBetNode[T any] struct {
 	Beta  int
 }
 
+func EqualByData[T comparable](self *AlfBetNode[T], other *AlfBetNode[T]) bool {
+	return self.Data == other.Data
+}
+func (self *AlfBetNode[T]) EqualByMetadata(other *AlfBetNode[T]) bool {
+	return self.Point == other.Point &&
+		self.Alpha == other.Alpha &&
+		self.Beta == other.Beta &&
+		self.IsMax == other.IsMax
+}
+
 type AlfBetPlayer struct {
 	Tree *AlfBetNode[int]
 }
