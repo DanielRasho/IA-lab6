@@ -42,18 +42,18 @@ func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard,
 			// No winner
 			// Leaf node has a value of 0
 			root.Point = 0
-		}
-
-		winnerVal := *winner
-		switch winnerVal {
-		case original:
-			// I won!
-			// Leaf node has a value of 1
-			root.Point = 1
-		case sim.GetOpponent(original):
-			// Opponent won!
-			// Leaf node has a value of -1
-			root.Point = -1
+		} else {
+			winnerVal := *winner
+			switch winnerVal {
+			case original:
+				// I won!
+				// Leaf node has a value of 1
+				root.Point = 1
+			case sim.GetOpponent(original):
+				// Opponent won!
+				// Leaf node has a value of -1
+				root.Point = -1
+			}
 		}
 
 	} else {
