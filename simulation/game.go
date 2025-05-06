@@ -25,6 +25,22 @@ const (
 	P2
 )
 
+func GetOpponent(whoami Turn) Turn {
+	if whoami == P1 {
+		return P2
+	} else {
+		return P1
+	}
+}
+
+func GetMarks(whoami Turn) (CellMark, CellMark) {
+	if whoami == P1 {
+		return X, O
+	} else {
+		return O, X
+	}
+}
+
 type Game struct {
 	Player1 TicTacToePlayer
 	Player2 TicTacToePlayer
@@ -54,6 +70,47 @@ func (g *Game) Start() {
 
 func (g Game) ShouldEnd() bool {
 	return g.shouldEnd
+}
+
+func PlayerWonInBoard(b *TicTacToeBoard, player Turn) bool {
+	patterns := [][]int{
+		// Horizontal lines
+		{0, 1, 2},
+		{3, 4, 5},
+		{6, 7, 8},
+
+		// Vertical lines
+		{0, 3, 6},
+		{1, 4, 7},
+		{2, 5, 8},
+
+		// Diagonal lines
+		{0, 4, 8},
+		{6, 4, 2},
+	}
+	board := *b
+
+patternLoop:
+	for _, pattern := range patterns {
+		firstCellMark := board[pattern[0]]
+		if firstCellMark == EMPTY {
+			continue
+		}
+
+		for i := 1; i < 3; i++ {
+			if board[pattern[i]] != firstCellMark {
+				continue patternLoop
+			}
+		}
+
+		if firstCellMark == X && player == P1 {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	return false
 }
 
 func (g *Game) Tick() {

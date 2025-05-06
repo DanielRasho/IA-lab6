@@ -68,3 +68,17 @@ func CopyAndMark(mask int, mark CellMark, idx int) int {
 		panic("You can't mark a cell as empty!")
 	}
 }
+
+// Returns the winner if there is one on the passed board
+func GetBoardWinner(mask int) *Turn {
+	board := BoardFromBitMask(mask)
+	playersToCheck := []Turn{P1, P2}
+
+	for _, currentPlayer := range playersToCheck {
+		if PlayerWonInBoard(&board, currentPlayer) {
+			return &currentPlayer
+		}
+	}
+
+	return nil
+}
