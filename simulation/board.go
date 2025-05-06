@@ -78,9 +78,11 @@ func BoardFromBitMask(mask int) TicTacToeBoard {
 // Returns the bitmask of the new board
 func CopyAndMark(mask int, mark CellMark, idx int) int {
 	if mark == X {
-		return mask | (1 << idx)
+		bitShift := 1 << idx
+		return mask | bitShift
 	} else if mark == O {
-		return mask | (1<<idx + 9)
+		bitShift := 1 << (idx + 9)
+		return mask | bitShift
 	} else {
 		panic("You can't mark a cell as empty!")
 	}
