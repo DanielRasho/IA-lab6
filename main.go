@@ -74,6 +74,8 @@ func NewPlayerFromType(p PlayerType) simulation.TicTacToePlayer {
 	switch p {
 	case HUMAN:
 		return players.NewHumanPlayer()
+	case MINIMAX:
+		return players.NewMiniMaxPlayer()
 	default:
 		panic("Player type not implemented!")
 	}
@@ -93,12 +95,14 @@ func main() {
 	for !game.ShouldEnd() {
 		if params.ShowBoard {
 			DisplayBoard(game)
+			fmt.Println("")
 		}
 		game.Tick()
 	}
 
 	if params.ShowBoard {
 		DisplayBoard(game)
+		fmt.Println("")
 	}
 	DisplayReport(game.Report())
 }

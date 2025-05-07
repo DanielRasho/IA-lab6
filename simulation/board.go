@@ -101,3 +101,16 @@ func GetBoardWinner(mask int) *Turn {
 
 	return nil
 }
+
+// Given a board finds the
+func GetAvailableCells(board TicTacToeBoard) []int {
+	available := make([]int, 0, 9)
+
+	for i, mark := range board {
+		if mark != EMPTY {
+			continue
+		}
+		available = append(available, i)
+	}
+	return available
+}
