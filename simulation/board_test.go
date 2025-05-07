@@ -162,3 +162,15 @@ func TestGetBoardWinner(t *testing.T) {
 	}
 
 }
+
+func TestExcalidrawExample(t *testing.T) {
+	board := []CellMark{
+		X, O, X,
+		X, O, X,
+		EMPTY, O, O,
+	}
+	winner := GetBoardWinner(ToBitMasks(&board))
+	if winner == nil || *winner != P2 {
+		t.Fatalf("Winner is nil or not P2!")
+	}
+}

@@ -103,7 +103,8 @@ patternLoop:
 			}
 		}
 
-		if firstCellMark == X && player == P1 {
+		if (firstCellMark == X && player == P1) ||
+			(firstCellMark == O && player == P2) {
 			return true
 		} else {
 			return false
