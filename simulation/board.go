@@ -11,8 +11,8 @@ type CellMark = int
 
 const (
 	EMPTY CellMark = iota
-	O
 	X
+	O
 )
 
 func CellToString(c CellMark, idx int64) string {

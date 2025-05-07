@@ -129,3 +129,36 @@ func TestBoardMark(t *testing.T) {
 	compareBoards(t, expectedBoard, board)
 
 }
+
+func TestGetBoardWinner(t *testing.T) {
+	board := []CellMark{
+		X, EMPTY, EMPTY,
+		X, EMPTY, EMPTY,
+		X, EMPTY, EMPTY,
+	}
+	winner := GetBoardWinner(ToBitMasks(&board))
+	if winner == nil || *winner != P1 {
+		t.Fatalf("Winner is nil or not P1!")
+	}
+
+	board = []CellMark{
+		X, X, O,
+		X, X, O,
+		EMPTY, EMPTY, O,
+	}
+	winner = GetBoardWinner(ToBitMasks(&board))
+	if winner == nil || *winner != P2 {
+		t.Fatalf("Winner is nil or not P1!")
+	}
+
+	board = []CellMark{
+		O, O, O,
+		X, EMPTY, X,
+		X, O, X,
+	}
+	winner = GetBoardWinner(ToBitMasks(&board))
+	if winner == nil || *winner != P2 {
+		t.Fatalf("Winner is nil or not P2!")
+	}
+
+}

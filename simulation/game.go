@@ -21,8 +21,8 @@ type GameStats struct {
 type Turn = int
 
 const (
-	P1 Turn = iota
-	P2
+	P1 Turn = 1
+	P2 Turn = 2
 )
 
 func GetOpponent(whoami Turn) Turn {
