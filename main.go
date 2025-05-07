@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/DanielRasho/IA-lab6/players"
-	"github.com/DanielRasho/IA-lab6/simulation"
+	sim "github.com/DanielRasho/IA-lab6/simulation"
 )
 
 type PlayerType = int
@@ -70,7 +70,7 @@ func ParseProgramParams() ProgramParams {
 	return params
 }
 
-func NewPlayerFromType(p PlayerType) simulation.TicTacToePlayer {
+func NewPlayerFromType(p PlayerType) sim.TicTacToePlayer {
 	switch p {
 	case HUMAN:
 		return players.NewHumanPlayer()
@@ -90,10 +90,16 @@ func main() {
 	player1 := NewPlayerFromType(params.Player1)
 	player2 := NewPlayerFromType(params.Player2)
 
-	game := simulation.NewGameWith(player1, player2)
+	game := sim.NewGameWith(player1, player2)
 
 	fmt.Println("Starting game...")
 	game.Start()
+	// game.Board = []sim.CellMark{
+	// 	sim.X, sim.O, sim.X,
+	// 	sim.O, sim.EMPTY, sim.X,
+	// 	sim.EMPTY, sim.EMPTY, sim.O,
+	// }
+	// game.CurrentTurn = sim.P2
 	for !game.ShouldEnd() {
 		if params.ShowBoard {
 			DisplayBoard(game)
