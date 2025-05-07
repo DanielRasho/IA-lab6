@@ -40,14 +40,14 @@ func countBits(mask int) int {
 	return count
 }
 
-func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard, original sim.Turn, whoami sim.Turn) (int, int) {
+func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard, original sim.Turn, whoami sim.Turn) (int, int, bool) {
 	currentMark, _ := sim.GetMarks(whoami)
 	currentOponent := sim.GetOpponent(whoami)
 
 	boardMask := sim.ToBitMasks(board)
-	isLeafNode := countBits(boardMask) == 9
+	winner := sim.GetBoardWinner(boardMask)
+	isLeafNode := countBits(boardMask) == 9 || winner != nil
 	if isLeafNode {
-		winner := sim.GetBoardWinner(boardMask)
 		if winner == nil {
 			// No winner
 			// Leaf node has a value of 0
@@ -72,29 +72,41 @@ func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard,
 				markedMask := sim.CopyAndMark(boardMask, currentMark, i)
 				markedBoard := sim.BoardFromBitMask(markedMask)
 
-				child := AlfBetNode[T]{
+				child := &AlfBetNode[T]{
 					Parent: root,
 					Alpha:  root.Alpha,
 					Beta:   root.Beta,
+					IsMax:  !root.IsMax,
 				}
+				root.Children = append(root.Children, child)
 
-				alpha, beta := _createTreeFromBoard(&child, &markedBoard, original, currentOponent)
+				alpha, beta, wasChildNodeLeaf := _createTreeFromBoard(child, &markedBoard, original, currentOponent)
 				if root.IsMax {
 					alpha = max(alpha, root.Alpha, child.Point)
 				} else {
 					beta = min(beta, root.Beta, child.Point)
 				}
 
-				if root.Alpha != alpha {
-					root.Beta = alpha
-				} else if root.Beta != beta {
-					root.Alpha = beta
+				if !wasChildNodeLeaf {
+					if root.Alpha != alpha {
+						root.Beta = alpha
+					} else if root.Beta != beta {
+						root.Alpha = beta
+					}
+				} else {
+					root.Alpha, root.Beta = alpha, beta
+				}
+
+				if root.IsMax {
+					root.Point = root.Alpha
+				} else {
+					root.Point = root.Beta
 				}
 			}
 		}
 	}
 
-	return root.Alpha, root.Beta
+	return root.Alpha, root.Beta, isLeafNode
 }
 
 func (self *AlfBetPlayer) CreateTreeFromBoard(board *sim.TicTacToeBoard, whoami sim.Turn, isMax bool) {
