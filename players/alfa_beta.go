@@ -167,7 +167,6 @@ func (s AlfBetPlayer) MakeMove(board sim.TicTacToeBoard, whoami sim.Turn) int {
 	}
 
 	// If we're player 2 or second turn of player 1, calculate tree only if nil
-
 	move := s.FindMoveOnTree(boardBitMask)
 	if move == nil {
 		s.CreateTreeFromBoard(&board, whoami, true)
