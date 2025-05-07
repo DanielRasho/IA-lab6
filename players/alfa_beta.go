@@ -6,6 +6,13 @@ import (
 	sim "github.com/DanielRasho/IA-lab6/simulation"
 )
 
+type AlfBetNodeData struct {
+	// The state the board should be at this point.
+	BoardBitMask int
+	// 0-8 index that the bot should mark when it encounters this state.
+	Move int
+}
+
 type AlfBetNode[T any] struct {
 	Data     T
 	Children []*AlfBetNode[T]
@@ -28,7 +35,7 @@ func (self *AlfBetNode[T]) EqualByMetadata(other *AlfBetNode[T]) bool {
 }
 
 type AlfBetPlayer struct {
-	Tree *AlfBetNode[int]
+	Tree *AlfBetNode[AlfBetNodeData]
 }
 
 func countBits(mask int) int {
@@ -110,11 +117,66 @@ func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard,
 }
 
 func (self *AlfBetPlayer) CreateTreeFromBoard(board *sim.TicTacToeBoard, whoami sim.Turn, isMax bool) {
-	self.Tree = &AlfBetNode[int]{
+	self.Tree = &AlfBetNode[AlfBetNodeData]{
 		Alpha: math.MinInt,
 		Beta:  math.MaxInt,
 		IsMax: isMax,
 	}
 
 	_createTreeFromBoard(self.Tree, board, whoami, whoami)
+}
+
+func _FindMoveOnTree(mask int, current *AlfBetNode[AlfBetNodeData]) *int {
+	if current == nil {
+		return nil
+	}
+
+	if current.Data.BoardBitMask == mask {
+		return &current.Data.Move
+	}
+
+	for _, v := range current.Children {
+		foundMove := _FindMoveOnTree(mask, v)
+		if foundMove != nil {
+			return foundMove
+		}
+	}
+
+	return nil
+}
+
+// Attempts to find a move on the tree.
+// If no tree exists or the move couldn't be found the nil is returned.
+func (self *AlfBetPlayer) FindMoveOnTree(boardBitMask int) *int {
+	if self.Tree == nil {
+		return nil
+	}
+
+	return _FindMoveOnTree(boardBitMask, self.Tree)
+}
+
+func NewAlfaBetaPlayer() AlfBetPlayer {
+	return AlfBetPlayer{}
+}
+
+func (s AlfBetPlayer) MakeMove(board sim.TicTacToeBoard, whoami sim.Turn) int {
+	// If we're player 1 we always start in the middle
+	boardBitMask := sim.ToBitMasks(&board)
+	if countBits(boardBitMask) == 0 && whoami == sim.P1 {
+		return 4
+	}
+
+	// If we're player 2 or second turn of player 1, calculate tree only if nil
+
+	move := s.FindMoveOnTree(boardBitMask)
+	if move == nil {
+		s.CreateTreeFromBoard(&board, whoami, true)
+		move = s.FindMoveOnTree(boardBitMask)
+	}
+
+	if move == nil {
+		panic("Move not found even after regenerating tree!")
+	}
+
+	return *move
 }
