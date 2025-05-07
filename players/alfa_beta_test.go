@@ -10,7 +10,7 @@ import (
 	sim "github.com/DanielRasho/IA-lab6/simulation"
 )
 
-func NewNode[T any](alpha int, beta int, parent *AlfBetNode[T]) *AlfBetNode[T] {
+func NewNode[T any](alpha float64, beta float64, parent *AlfBetNode[T]) *AlfBetNode[T] {
 
 	node := &AlfBetNode[T]{
 		Alpha:  alpha,
@@ -25,7 +25,7 @@ func NewNode[T any](alpha int, beta int, parent *AlfBetNode[T]) *AlfBetNode[T] {
 	return node
 }
 
-func NewIntNode(alpha int, beta int, parent *AlfBetNode[int]) *AlfBetNode[int] {
+func NewIntNode(alpha float64, beta float64, parent *AlfBetNode[AlfBetNodeData]) *AlfBetNode[AlfBetNodeData] {
 	return NewNode(alpha, beta, parent)
 }
 
@@ -41,7 +41,7 @@ func TwoEmptyCellsBoard() sim.TicTacToeBoard {
 	}
 }
 
-func CreateTwoEmptyCellsExpectedTree() *AlfBetNode[int] {
+func CreateTwoEmptyCellsExpectedTree() *AlfBetNode[AlfBetNodeData] {
 	root := NewIntNode(math.MinInt, math.MaxInt, nil)
 	root.Alpha = 0
 	root.Beta = 1
