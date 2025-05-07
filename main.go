@@ -76,6 +76,8 @@ func NewPlayerFromType(p PlayerType) simulation.TicTacToePlayer {
 		return players.NewHumanPlayer()
 	case MINIMAX:
 		return players.NewMiniMaxPlayer()
+	case ALFA_BETA:
+		return players.NewAlfaBetaPlayer()
 	default:
 		panic("Player type not implemented!")
 	}

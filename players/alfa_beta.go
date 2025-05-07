@@ -19,9 +19,9 @@ type AlfBetNode[T any] struct {
 	Parent   *AlfBetNode[T]
 
 	IsMax bool
-	Point int
-	Alpha int
-	Beta  int
+	Point float64
+	Alpha float64
+	Beta  float64
 }
 
 func EqualByData[T comparable](self *AlfBetNode[T], other *AlfBetNode[T]) bool {
@@ -47,7 +47,12 @@ func countBits(mask int) int {
 	return count
 }
 
-func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard, original sim.Turn, whoami sim.Turn) (int, int, bool) {
+func approxEqual(a float64, b float64) bool {
+	epsilon := math.Nextafter(1.0, 2.0) - 1.0
+	return a-b <= epsilon
+}
+
+func _createTreeFromBoard(root *AlfBetNode[AlfBetNodeData], board *sim.TicTacToeBoard, original sim.Turn, whoami sim.Turn, treeDepth int) (float64, float64, bool) {
 	currentMark, _ := sim.GetMarks(whoami)
 	currentOponent := sim.GetOpponent(whoami)
 
@@ -65,11 +70,11 @@ func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard,
 			case original:
 				// I won!
 				// Leaf node has a value of 1
-				root.Point = 1
+				root.Point = 1 / float64(treeDepth)
 			case sim.GetOpponent(original):
 				// Opponent won!
 				// Leaf node has a value of -1
-				root.Point = -1
+				root.Point = -1 * float64(treeDepth)
 			}
 		}
 
@@ -79,7 +84,8 @@ func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard,
 				markedMask := sim.CopyAndMark(boardMask, currentMark, i)
 				markedBoard := sim.BoardFromBitMask(markedMask)
 
-				child := &AlfBetNode[T]{
+				child := &AlfBetNode[AlfBetNodeData]{
+					Data:   AlfBetNodeData{BoardBitMask: markedMask},
 					Parent: root,
 					Alpha:  root.Alpha,
 					Beta:   root.Beta,
@@ -87,21 +93,28 @@ func _createTreeFromBoard[T any](root *AlfBetNode[T], board *sim.TicTacToeBoard,
 				}
 				root.Children = append(root.Children, child)
 
-				alpha, beta, wasChildNodeLeaf := _createTreeFromBoard(child, &markedBoard, original, currentOponent)
+				alpha, beta, wasChildNodeLeaf := _createTreeFromBoard(child, &markedBoard, original, currentOponent, treeDepth+1)
 				if root.IsMax {
+					if child.Point > root.Alpha {
+						root.Data.Move = i
+					}
 					alpha = max(alpha, root.Alpha, child.Point)
 				} else {
+					if child.Point < root.Beta {
+						root.Data.Move = i
+					}
 					beta = min(beta, root.Beta, child.Point)
 				}
 
-				if !wasChildNodeLeaf {
-					if root.Alpha != alpha {
+				if wasChildNodeLeaf {
+
+					root.Alpha, root.Beta = alpha, beta
+				} else {
+					if !approxEqual(root.Alpha, alpha) {
 						root.Beta = alpha
-					} else if root.Beta != beta {
+					} else if !approxEqual(root.Beta, beta) {
 						root.Alpha = beta
 					}
-				} else {
-					root.Alpha, root.Beta = alpha, beta
 				}
 
 				if root.IsMax {
@@ -121,9 +134,10 @@ func (self *AlfBetPlayer) CreateTreeFromBoard(board *sim.TicTacToeBoard, whoami 
 		Alpha: math.MinInt,
 		Beta:  math.MaxInt,
 		IsMax: isMax,
+		Data:  AlfBetNodeData{BoardBitMask: sim.ToBitMasks(board)},
 	}
 
-	_createTreeFromBoard(self.Tree, board, whoami, whoami)
+	_createTreeFromBoard(self.Tree, board, whoami, whoami, 0)
 }
 
 func _FindMoveOnTree(mask int, current *AlfBetNode[AlfBetNodeData]) *int {
