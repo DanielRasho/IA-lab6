@@ -1,5 +1,7 @@
 # AI Tic Tac Toe
 
+[Link to Video](https://youtu.be/h0S8IqNrG8I)
+
 Each AI must implement the player interface!
 
 https://github.com/DanielRasho/IA-lab6/blob/9b5e2175f2de2596b4523a127e507eba123c3562/simulation/game.go#L7-L12
