@@ -94,10 +94,13 @@ func main() {
 
 	fmt.Println("Starting game...")
 	game.Start()
+	// | 1 | 2 | O |
+	// | X | X | O |
+	// | 7 | 8 | X |
 	// game.Board = []sim.CellMark{
-	// 	sim.X, sim.O, sim.X,
-	// 	sim.O, sim.EMPTY, sim.X,
 	// 	sim.EMPTY, sim.EMPTY, sim.O,
+	// 	sim.X, sim.X, sim.O,
+	// 	sim.EMPTY, sim.EMPTY, sim.X,
 	// }
 	// game.CurrentTurn = sim.P2
 	for !game.ShouldEnd() {

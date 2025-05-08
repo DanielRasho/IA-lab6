@@ -33,6 +33,9 @@ func (self *AlfBetNode[T]) EqualByMetadata(other *AlfBetNode[T]) bool {
 		self.Beta == other.Beta &&
 		self.IsMax == other.IsMax
 }
+func GetPoint[T any](self *AlfBetNode[T]) float64 {
+	return self.Point
+}
 
 type AlfBetPlayer struct {
 	Tree *AlfBetNode[AlfBetNodeData]
@@ -49,7 +52,38 @@ func countBits(mask int) int {
 
 func approxEqual(a float64, b float64) bool {
 	epsilon := math.Nextafter(1.0, 2.0) - 1.0
-	return a-b <= epsilon
+	return bothAreNotInf(a, b) && a-b <= epsilon
+}
+
+// a<=b with floats64
+func lessOrAproxEqual(a float64, b float64) bool {
+	return a < b || approxEqual(a, b)
+}
+
+func isInf(a float64) bool {
+	return math.IsInf(a, 1) || math.IsInf(a, -1)
+}
+
+func bothAreNotInf(a float64, b float64) bool {
+	return !isInf(a) && !isInf(b)
+}
+
+func mapAndApply[T any](data []T, extractor func(T) float64, op func(float64, float64) float64) float64 {
+
+	total := 0.0
+	for _, v := range data {
+		total = op(total, extractor(v))
+	}
+
+	return total
+}
+
+func max2(a, b float64) float64 {
+	return max(a, b)
+}
+
+func min2(a, b float64) float64 {
+	return min(a, b)
 }
 
 func _createTreeFromBoard(root *AlfBetNode[AlfBetNodeData], board *sim.TicTacToeBoard, original sim.Turn, whoami sim.Turn, treeDepth int) (float64, float64, bool) {
@@ -69,12 +103,10 @@ func _createTreeFromBoard(root *AlfBetNode[AlfBetNodeData], board *sim.TicTacToe
 			switch winnerVal {
 			case original:
 				// I won!
-				// Leaf node has a value of 1
-				root.Point = 1 / float64(treeDepth)
+				root.Point = 10 / float64(treeDepth)
 			case sim.GetOpponent(original):
 				// Opponent won!
-				// Leaf node has a value of -1
-				root.Point = -1 * float64(treeDepth)
+				root.Point = -10 / float64(treeDepth)
 			}
 		}
 
@@ -94,6 +126,7 @@ func _createTreeFromBoard(root *AlfBetNode[AlfBetNodeData], board *sim.TicTacToe
 				root.Children = append(root.Children, child)
 
 				alpha, beta, wasChildNodeLeaf := _createTreeFromBoard(child, &markedBoard, original, currentOponent, treeDepth+1)
+
 				if root.IsMax {
 					if child.Point > root.Alpha {
 						root.Data.Move = i
@@ -107,20 +140,23 @@ func _createTreeFromBoard(root *AlfBetNode[AlfBetNodeData], board *sim.TicTacToe
 				}
 
 				if wasChildNodeLeaf {
-
-					root.Alpha, root.Beta = alpha, beta
+					root.Alpha, root.Beta = max(alpha, root.Alpha), min(beta, root.Beta)
 				} else {
-					if !approxEqual(root.Alpha, alpha) {
-						root.Beta = alpha
-					} else if !approxEqual(root.Beta, beta) {
-						root.Alpha = beta
+					if !approxEqual(root.Alpha, child.Alpha) && !isInf(child.Alpha) {
+						root.Beta = min(root.Beta, child.Alpha)
+					} else if !approxEqual(root.Beta, child.Beta) && !isInf(child.Beta) {
+						root.Alpha = max(root.Alpha, child.Beta)
 					}
 				}
 
 				if root.IsMax {
-					root.Point = root.Alpha
+					root.Point = mapAndApply(root.Children, GetPoint, max2)
 				} else {
-					root.Point = root.Beta
+					root.Point = mapAndApply(root.Children, GetPoint, min2)
+				}
+
+				if lessOrAproxEqual(root.Beta, root.Alpha) {
+					break
 				}
 			}
 		}
@@ -131,13 +167,13 @@ func _createTreeFromBoard(root *AlfBetNode[AlfBetNodeData], board *sim.TicTacToe
 
 func (self *AlfBetPlayer) CreateTreeFromBoard(board *sim.TicTacToeBoard, whoami sim.Turn, isMax bool) {
 	self.Tree = &AlfBetNode[AlfBetNodeData]{
-		Alpha: math.MinInt,
-		Beta:  math.MaxInt,
+		Alpha: math.Inf(-1),
+		Beta:  math.Inf(1),
 		IsMax: isMax,
 		Data:  AlfBetNodeData{BoardBitMask: sim.ToBitMasks(board)},
 	}
 
-	_createTreeFromBoard(self.Tree, board, whoami, whoami, 0)
+	_createTreeFromBoard(self.Tree, board, whoami, whoami, 1)
 }
 
 func _FindMoveOnTree(mask int, current *AlfBetNode[AlfBetNodeData]) *int {
@@ -183,6 +219,7 @@ func (s AlfBetPlayer) MakeMove(board sim.TicTacToeBoard, whoami sim.Turn) int {
 	// If we're player 2 or second turn of player 1, calculate tree only if nil
 	move := s.FindMoveOnTree(boardBitMask)
 	if move == nil {
+		// s.CreateTreeFromBoard(&board, whoami, whoami == sim.P1)
 		s.CreateTreeFromBoard(&board, whoami, true)
 		move = s.FindMoveOnTree(boardBitMask)
 	}
