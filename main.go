@@ -59,7 +59,7 @@ type ProgramParams struct {
 func ParseProgramParams() ProgramParams {
 	params := ProgramParams{}
 	flag.BoolVar(&params.ShowBoard, "showBoard", true, "Describes whether or not the board should be displayed when making a game.")
-	flag.BoolVar(&params.SimulateAllIAs, "simulateIAs", true, "Simulates 1000 games with each AI playing each other.")
+	flag.BoolVar(&params.SimulateAllIAs, "simulateIAs", false, "Simulates 1000 games with each AI playing each other.")
 
 	pTypeFormat := "The type of player %d. Valid values are:\n* h: Human\n* mi: Normal minimax\n* a: Minimax with alfa/beta prunning\n* mo: Montecarlo AI"
 
@@ -177,7 +177,7 @@ func main() {
 		statsGroup.Add(1)
 		go ListenForStats(&statsGroup, gameEndedChan, &table)
 
-		players := []PlayerType{ALFA_BETA}
+		players := []PlayerType{ALFA_BETA, MINIMAX}
 		// players := []PlayerType{MINIMAX, ALFA_BETA, MONTECARLO}
 		for _, p1 := range players {
 			for _, p2 := range players {
