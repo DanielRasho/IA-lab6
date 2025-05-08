@@ -22,7 +22,7 @@ func (player MinMaxPlayer) MakeMove(board sim.TicTacToeBoard, whoami sim.Turn) i
 
 	for _, move := range sim.GetAvailableCells(board) {
 		board[move] = playerMark
-		score := miniMax(board, sim.GetOpponent(whoami), true)
+		score := miniMax(board, sim.GetOpponent(whoami), false)
 		board[move] = sim.EMPTY
 		if score > bestScore {
 			bestScore = score
@@ -44,7 +44,7 @@ func miniMax(board sim.TicTacToeBoard, whoami sim.Turn, isMaximizing bool) int {
 		return score
 	}
 
-	playerMark, oponentMark := sim.GetMarks(whoami)
+	playerMark, _ := sim.GetMarks(whoami)
 	oponent := sim.GetOpponent(whoami)
 
 	if isMaximizing {
@@ -59,8 +59,8 @@ func miniMax(board sim.TicTacToeBoard, whoami sim.Turn, isMaximizing bool) int {
 	} else {
 		minScore := math.MaxInt
 		for _, move := range sim.GetAvailableCells(board) {
-			board[move] = oponentMark
-			score := miniMax(board, whoami, true)
+			board[move] = playerMark
+			score := miniMax(board, oponent, true)
 			board[move] = sim.EMPTY
 			minScore = min(minScore, score)
 		}
