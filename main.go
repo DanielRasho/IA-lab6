@@ -86,6 +86,62 @@ func NewPlayerFromType(p PlayerType) sim.TicTacToePlayer {
 	}
 }
 
+// func RunExperiments() {
+// 	fmt.Println("Running Monte Carlo Tree Search experiments...")
+//
+// 	wins := 0
+// 	draws := 0
+// 	losses := 0
+// 	totalNodesExplored := 0
+//
+// 	mctsPlayer := players.NewMonteCarloPlayer()
+// 	minimaxPlayer := players.NewMiniMaxPlayer()
+//
+// 	N := 1000
+// 	for i := 0; i < N; i++ {
+// 		var game sim.Game
+// 		var mctsPlayerTurn sim.Turn
+//
+// 		if i%2 == 0 {
+// 			game = sim.NewGameWith(mctsPlayer, minimaxPlayer)
+// 			mctsPlayerTurn = sim.P1
+// 		} else {
+// 			game = sim.NewGameWith(minimaxPlayer, mctsPlayer)
+// 			mctsPlayerTurn = sim.P2
+// 		}
+//
+// 		game.Start()
+//
+// 		nodesExplored := 0
+//
+// 		for !game.ShouldEnd() {
+// 			if game.CurrentTurn == mctsPlayerTurn {
+// 				nodesExplored++
+// 			}
+//
+// 			game.Tick()
+// 		}
+//
+// 		report := game.Report()
+// 		if report.Winner == "No one" {
+// 			draws++
+// 		} else if (mctsPlayerTurn == sim.P1 && report.Winner == "Player 1") ||
+// 			(mctsPlayerTurn == sim.P2 && report.Winner == "Player 2") {
+// 			wins++
+// 		} else {
+// 			losses++
+// 		}
+//
+// 		totalNodesExplored += nodesExplored
+// 	}
+//
+// 	fmt.Printf("Results after %d experiments:\n", N)
+// 	fmt.Printf("Wins: %d (%.2f%%)\n", wins, float64(wins)/float64(N)*100)
+// 	fmt.Printf("Draws: %d (%.2f%%)\n", draws, float64(draws)/float64(N)*100)
+// 	fmt.Printf("Losses: %d (%.2f%%)\n", losses, float64(losses)/float64(N)*100)
+// 	fmt.Printf("Average nodes explored per game: %.2f\n", float64(totalNodesExplored)/float64(N))
+// }
+
 func main() {
 	params := ParseProgramParams()
 
