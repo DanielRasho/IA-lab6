@@ -81,6 +81,8 @@ func NewPlayerFromType(p PlayerType) sim.TicTacToePlayer {
 		return players.NewMiniMaxPlayer()
 	case ALFA_BETA:
 		return players.NewAlfaBetaPlayer()
+	case MONTECARLO:
+		return players.NewMonteCarloPlayer()
 	default:
 		panic("Player type not implemented!")
 	}
@@ -177,8 +179,8 @@ func main() {
 		statsGroup.Add(1)
 		go ListenForStats(&statsGroup, gameEndedChan, &table)
 
-		players := []PlayerType{ALFA_BETA, MINIMAX}
-		// players := []PlayerType{MINIMAX, ALFA_BETA, MONTECARLO}
+		// players := []PlayerType{ALFA_BETA, MINIMAX}
+		players := []PlayerType{MINIMAX, ALFA_BETA, MONTECARLO}
 		for _, p1 := range players {
 			for _, p2 := range players {
 				for i := range 1000 {
