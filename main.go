@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/DanielRasho/IA-lab6/players"
 	sim "github.com/DanielRasho/IA-lab6/simulation"
@@ -25,7 +26,7 @@ func PrettyDisplay(p PlayerType) string {
 	case MINIMAX:
 		return "Minimax"
 	case ALFA_BETA:
-		return "Alfa/Beta prunning"
+		return "Alfa/Beta"
 	case MONTECARLO:
 		return "Montecarlo"
 	default:
@@ -49,14 +50,16 @@ func FromString(s string) PlayerType {
 }
 
 type ProgramParams struct {
-	ShowBoard bool
-	Player1   PlayerType
-	Player2   PlayerType
+	SimulateAllIAs bool
+	ShowBoard      bool
+	Player1        PlayerType
+	Player2        PlayerType
 }
 
 func ParseProgramParams() ProgramParams {
 	params := ProgramParams{}
-	flag.BoolVar(&params.ShowBoard, "showBoard", true, "Describes whether or not the board should be displayed when making a game")
+	flag.BoolVar(&params.ShowBoard, "showBoard", true, "Describes whether or not the board should be displayed when making a game.")
+	flag.BoolVar(&params.SimulateAllIAs, "simulateIAs", true, "Simulates 1000 games with each AI playing each other.")
 
 	pTypeFormat := "The type of player %d. Valid values are:\n* h: Human\n* mi: Normal minimax\n* a: Minimax with alfa/beta prunning\n* mo: Montecarlo AI"
 
@@ -86,34 +89,88 @@ func NewPlayerFromType(p PlayerType) sim.TicTacToePlayer {
 func main() {
 	params := ParseProgramParams()
 
-	fmt.Printf("Constructing game of %s againts %s...\n", PrettyDisplay(params.Player1), PrettyDisplay(params.Player2))
-	player1 := NewPlayerFromType(params.Player1)
-	player2 := NewPlayerFromType(params.Player2)
+	if !params.SimulateAllIAs {
 
-	game := sim.NewGameWith(player1, player2)
+		fmt.Printf("Constructing game of %s againts %s...\n", PrettyDisplay(params.Player1), PrettyDisplay(params.Player2))
+		player1 := NewPlayerFromType(params.Player1)
+		player2 := NewPlayerFromType(params.Player2)
 
-	fmt.Println("Starting game...")
-	game.Start()
-	// | 1 | 2 | O |
-	// | X | X | O |
-	// | 7 | 8 | X |
-	// game.Board = []sim.CellMark{
-	// 	sim.EMPTY, sim.EMPTY, sim.O,
-	// 	sim.X, sim.X, sim.O,
-	// 	sim.EMPTY, sim.EMPTY, sim.X,
-	// }
-	// game.CurrentTurn = sim.P2
-	for !game.ShouldEnd() {
+		game := sim.NewGameWith(player1, player2)
+
+		fmt.Println("Starting game...")
+		game.Start()
+		for !game.ShouldEnd() {
+			if params.ShowBoard {
+				DisplayBoard(game)
+				fmt.Println("")
+			}
+			game.Tick()
+		}
+
 		if params.ShowBoard {
 			DisplayBoard(game)
 			fmt.Println("")
 		}
-		game.Tick()
-	}
+		DisplayReport(game.Report())
+	} else {
+		gamesGroup := sync.WaitGroup{}
+		table := make(ReportTable)
+		gameEndedChan := make(chan GameEndedStats, 1000)
 
-	if params.ShowBoard {
-		DisplayBoard(game)
-		fmt.Println("")
+		statsGroup := sync.WaitGroup{}
+		statsGroup.Add(1)
+		go ListenForStats(&statsGroup, gameEndedChan, &table)
+
+		players := []PlayerType{ALFA_BETA}
+		// players := []PlayerType{MINIMAX, ALFA_BETA, MONTECARLO}
+		for _, p1 := range players {
+			for _, p2 := range players {
+				for i := range 1000 {
+					gamesGroup.Add(1)
+					go func() {
+						defer gamesGroup.Done()
+						player1 := NewPlayerFromType(p1)
+						player2 := NewPlayerFromType(p2)
+
+						game := sim.NewGameWith(player1, player2)
+
+						fmt.Printf("Starting game %d...\n", i)
+						game.Start()
+						for !game.ShouldEnd() {
+							if params.ShowBoard {
+								DisplayBoard(game)
+								fmt.Println("")
+							}
+							game.Tick()
+						}
+
+						if params.ShowBoard {
+							DisplayBoard(game)
+							fmt.Println("")
+						}
+						fmt.Printf("Game %d ended!\n", i)
+						report := game.Report()
+						var winner *PlayerType = nil
+						if report.Winner == "Player 1" {
+							winner = &p1
+						} else if report.Winner == "Player 2" {
+							winner = &p2
+						}
+
+						gameEndedChan <- GameEndedStats{
+							P1:     p1,
+							P2:     p2,
+							Winner: winner,
+						}
+					}()
+				}
+			}
+		}
+
+		gamesGroup.Wait()
+		close(gameEndedChan)
+		statsGroup.Wait()
+
+		DisplaySimultionResults(&table)
 	}
-	DisplayReport(game.Report())
 }

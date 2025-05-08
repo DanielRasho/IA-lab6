@@ -71,3 +71,37 @@ Winner     : %s
 Duration   : %s
 `, st.Winner, st.MovementCount, st.EndTime.Sub(st.StartTime))
 }
+
+func formatCenteredCell(value string, cellWidth int) string {
+	remainingSpace := cellWidth - len(value)
+	padlen := (cellWidth - len(value)) / 2
+	if remainingSpace%2 == 0 {
+		return fmt.Sprintf("%*s%s%*s", padlen, "", value, padlen, "")
+	} else {
+		return fmt.Sprintf("%*s%s%*s", padlen+1, "", value, padlen, "")
+	}
+}
+
+func DisplaySimultionResults(st *ReportTable) {
+	fmt.Printf(
+		`
+====================================================================================================================
+| %s | %s | %s | %s | %s |
+====================================================================================================================
+`,
+		formatCenteredCell("Matchup", 36),
+		formatCenteredCell("P1", 16),
+		formatCenteredCell("P2", 16),
+		formatCenteredCell("Draws", 16),
+		formatCenteredCell("Game count", 16),
+	)
+	for players, stats := range *st {
+		fmt.Printf("| %s | %s | %s | %s | %s |\n",
+			formatCenteredCell(fmt.Sprintf("%s vs %s", PrettyDisplay(players.P1), PrettyDisplay(players.P2)), 36),
+			formatCenteredCell(fmt.Sprintf("%f", stats.WinsP1), 16),
+			formatCenteredCell(fmt.Sprintf("%f", stats.WinsP2), 16),
+			formatCenteredCell(fmt.Sprintf("%f", stats.Draws), 16),
+			formatCenteredCell(fmt.Sprintf("%f", stats.GameCount), 16),
+		)
+	}
+}
